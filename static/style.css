@@ -1,0 +1,273 @@
+/* ── CSS Custom Properties ─────────────────────────────────────────────────── */
+:root {
+  --color-bg: #f0f2f5;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #1a202c;
+  --color-muted: #718096;
+  --color-primary: #2d3748;
+  --color-accent: #667eea;
+  --color-accent-end: #764ba2;
+  --color-success: #38a169;
+  --color-danger: #e53e3e;
+  --color-warning: #d69e2e;
+  --color-locked: #ed8936;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --radius: 10px;
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ── Navbar ────────────────────────────────────────────────────────────────── */
+.navbar {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #4a5568 100%) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.3px;
+  color: #ffffff !important;
+}
+
+.navbar-brand .brand-accent {
+  background: linear-gradient(90deg, var(--color-accent), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-link {
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.8) !important;
+  transition: color 0.15s;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #ffffff !important;
+}
+
+.navbar-user {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.7);
+  border-left: 1px solid rgba(255,255,255,0.2);
+  padding-left: 1rem;
+  margin-left: 0.5rem;
+}
+
+/* ── Price-lock banner ─────────────────────────────────────────────────────── */
+.prices-locked-banner {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  color: #92400e;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────────── */
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  background: var(--color-surface);
+}
+
+.card-header {
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.2px;
+  padding: 0.85rem 1.25rem;
+}
+
+/* ── Stat cards (dashboard) ────────────────────────────────────────────────── */
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  min-width: 160px;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--color-muted);
+  margin-bottom: 0.3rem;
+}
+
+.stat-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+}
+
+.stat-value.gain-positive { color: var(--color-success); }
+.stat-value.gain-negative { color: var(--color-danger); }
+
+/* ── Tables ────────────────────────────────────────────────────────────────── */
+.table th {
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-muted);
+  border-top: none;
+  padding: 0.65rem 1rem;
+  background: #f8fafc;
+}
+
+.table td {
+  padding: 0.7rem 1rem;
+  vertical-align: middle;
+  border-color: var(--color-border);
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* ── Badges ────────────────────────────────────────────────────────────────── */
+.badge-sector {
+  font-size: 0.72rem;
+  font-weight: 500;
+  background-color: #edf2f7 !important;
+  color: #4a5568 !important;
+  border-radius: 6px;
+  padding: 0.25em 0.6em;
+}
+
+.badge-price-locked {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background-color: #fff7ed !important;
+  color: var(--color-locked) !important;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  padding: 0.2em 0.55em;
+}
+
+.badge-price-active {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background-color: #f0fff4 !important;
+  color: var(--color-success) !important;
+  border: 1px solid #9ae6b4;
+  border-radius: 6px;
+  padding: 0.2em 0.55em;
+}
+
+/* ── Price tag ─────────────────────────────────────────────────────────────── */
+.price-tag {
+  font-weight: 600;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 0.9rem;
+  color: var(--color-text);
+}
+
+/* ── Gain / loss ───────────────────────────────────────────────────────────── */
+.gain-positive { color: var(--color-success); }
+.gain-negative { color: var(--color-danger); }
+
+/* ── Leaderboard podium ────────────────────────────────────────────────────── */
+.rank-medal {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.rank-1-row { background-color: #fffbeb !important; }
+.rank-2-row { background-color: #f9fafb !important; }
+.rank-3-row { background-color: #fff8f1 !important; }
+
+.rank-1 { font-weight: 700; color: #b7791f; }
+.rank-2 { font-weight: 700; color: #718096; }
+.rank-3 { font-weight: 700; color: #9c4221; }
+
+/* ── Auth forms ────────────────────────────────────────────────────────────── */
+.auth-card {
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+}
+
+.auth-card .card-body {
+  padding: 2.25rem 2rem;
+}
+
+.auth-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-end));
+  border: none;
+  color: white;
+  font-weight: 600;
+}
+
+.btn-primary-gradient:hover {
+  background: linear-gradient(135deg, #5a6fd6, #6b4299);
+  color: white;
+}
+
+/* ── Search + filter bar ───────────────────────────────────────────────────── */
+.filter-bar {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Allocation bar ────────────────────────────────────────────────────────── */
+.alloc-bar {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 80px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.alloc-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-end));
+  border-radius: 2px;
+}
+
+/* ── Responsive tweaks ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .stat-card {
+    min-width: unset;
+    flex: 1;
+  }
+  .auth-card .card-body {
+    padding: 1.5rem 1.25rem;
+  }
+}

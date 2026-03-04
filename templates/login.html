@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Login — VC Fantasy{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4 col-sm-10">
+    <div class="card auth-card mt-4">
+      <div class="card-body">
+        <div class="text-center mb-4">
+          <div style="font-size:2rem; margin-bottom:0.4rem;">💼</div>
+          <h2 class="auth-title mb-1">VC Fantasy</h2>
+          <p class="text-muted" style="font-size:0.88rem;">Sign in to your portfolio</p>
+        </div>
+        <form method="post">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="username" style="font-size:0.85rem;">Username</label>
+            <input type="text" class="form-control" id="username" name="username"
+                   placeholder="Enter your username" required autofocus>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="password" style="font-size:0.85rem;">Password</label>
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="Enter your password" required>
+          </div>
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary-gradient btn-lg" style="font-size:0.95rem;">Sign In</button>
+          </div>
+        </form>
+        <hr class="my-3" style="border-color: #e2e8f0;">
+        <p class="text-center text-muted mb-0" style="font-size:0.85rem;">
+          Don't have an account?
+          <a href="/register" class="text-decoration-none fw-semibold">Create one</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

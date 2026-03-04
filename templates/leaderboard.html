@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard — VC Fantasy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">Leaderboard</h4>
+    <span class="text-muted" style="font-size:0.85rem;">{{ rankings|length }} investor{{ 's' if rankings|length != 1 }}</span>
+  </div>
+</div>
+
+{% if rankings|length >= 3 %}
+<!-- Podium: top 3 -->
+<div class="d-flex justify-content-center align-items-end gap-3 mb-4">
+  <!-- 2nd place -->
+  <div class="text-center">
+    <div class="card p-3 rank-2-row" style="min-width:140px;">
+      <div style="font-size:1.8rem;">🥈</div>
+      <div class="fw-semibold" style="font-size:0.9rem;">{{ rankings[1].name }}{% if rankings[1].name == current_vc %} <span class="badge bg-dark" style="font-size:0.65rem;">you</span>{% endif %}</div>
+      <div class="price-tag mt-1">${{ "{:,.0f}".format(rankings[1].total_value) }}</div>
+      <div style="font-size:0.75rem;" class="{{ 'gain-positive' if rankings[1].gain >= 0 else 'gain-negative' }}">
+        {{ '+' if rankings[1].gain >= 0 else '' }}${{ "{:,.0f}".format(rankings[1].gain) }}
+      </div>
+    </div>
+  </div>
+  <!-- 1st place (tallest) -->
+  <div class="text-center" style="margin-bottom: -8px;">
+    <div class="card p-3 rank-1-row" style="min-width:150px; border: 2px solid #fcd34d;">
+      <div style="font-size:2.2rem;">🥇</div>
+      <div class="fw-bold" style="font-size:0.95rem;">{{ rankings[0].name }}{% if rankings[0].name == current_vc %} <span class="badge bg-dark" style="font-size:0.65rem;">you</span>{% endif %}</div>
+      <div class="price-tag mt-1" style="font-size:1.05rem;">${{ "{:,.0f}".format(rankings[0].total_value) }}</div>
+      <div style="font-size:0.75rem;" class="{{ 'gain-positive' if rankings[0].gain >= 0 else 'gain-negative' }}">
+        {{ '+' if rankings[0].gain >= 0 else '' }}${{ "{:,.0f}".format(rankings[0].gain) }}
+      </div>
+    </div>
+  </div>
+  <!-- 3rd place -->
+  <div class="text-center">
+    <div class="card p-3 rank-3-row" style="min-width:140px;">
+      <div style="font-size:1.8rem;">🥉</div>
+      <div class="fw-semibold" style="font-size:0.9rem;">{{ rankings[2].name }}{% if rankings[2].name == current_vc %} <span class="badge bg-dark" style="font-size:0.65rem;">you</span>{% endif %}</div>
+      <div class="price-tag mt-1">${{ "{:,.0f}".format(rankings[2].total_value) }}</div>
+      <div style="font-size:0.75rem;" class="{{ 'gain-positive' if rankings[2].gain >= 0 else 'gain-negative' }}">
+        {{ '+' if rankings[2].gain >= 0 else '' }}${{ "{:,.0f}".format(rankings[2].gain) }}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if rankings %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Investor</th>
+          <th>Cash</th>
+          <th>Holdings</th>
+          <th>Total Value</th>
+          <th>Gain / Loss</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rankings %}
+        <tr class="
+          {% if loop.index == 1 %}rank-1-row{% elif loop.index == 2 %}rank-2-row{% elif loop.index == 3 %}rank-3-row{% endif %}
+          {{ 'fw-semibold' if r.name == current_vc }}
+        ">
+          <td style="width:48px;">
+            {% if loop.index == 1 %}
+              <span class="rank-1">🥇</span>
+            {% elif loop.index == 2 %}
+              <span class="rank-2">🥈</span>
+            {% elif loop.index == 3 %}
+              <span class="rank-3">🥉</span>
+            {% else %}
+              <span class="text-muted">{{ loop.index }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {{ r.name }}
+            {% if r.name == current_vc %}
+              <span class="badge bg-dark ms-1" style="font-size:0.68rem;">you</span>
+            {% endif %}
+          </td>
+          <td class="text-muted">${{ "{:,.0f}".format(r.cash) }}</td>
+          <td class="text-muted">${{ "{:,.0f}".format(r.holdings_value) }}</td>
+          <td class="fw-semibold price-tag">${{ "{:,.0f}".format(r.total_value) }}</td>
+          <td class="{{ 'gain-positive' if r.gain >= 0 else 'gain-negative' }} fw-semibold">
+            {{ '+' if r.gain >= 0 else '' }}${{ "{:,.0f}".format(r.gain) }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body text-center py-5">
+    <div style="font-size:2.5rem; margin-bottom:0.75rem;">🏆</div>
+    <p class="text-muted">No investors have joined yet. Be the first!</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

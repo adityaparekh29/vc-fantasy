@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Portfolio — VC Fantasy{% endblock %}
+
+{% block content %}
+
+{% if prices_locked %}
+<div class="prices-locked-banner">
+  <span>🔒</span>
+  <span><strong>Prices are locked.</strong> Market price movements activate once 100+ investors have joined.</span>
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="mb-0 fw-bold">{{ vc_name }}'s Portfolio</h4>
+    <span class="text-muted" style="font-size:0.85rem;">VC Dashboard</span>
+  </div>
+  <a href="/companies" class="btn btn-sm btn-primary-gradient px-3">+ Invest</a>
+</div>
+
+<!-- Stats bar -->
+<div class="d-flex flex-wrap gap-3 mb-4">
+  <div class="stat-card">
+    <div class="stat-label">Cash</div>
+    <div class="stat-value">${{ "{:,.0f}".format(cash) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Holdings Value</div>
+    <div class="stat-value">${{ "{:,.0f}".format(holdings_value) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Total Value</div>
+    <div class="stat-value">${{ "{:,.0f}".format(total_value) }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Gain / Loss</div>
+    <div class="stat-value {{ 'gain-positive' if gain >= 0 else 'gain-negative' }}">
+      {{ '+' if gain >= 0 else '' }}${{ "{:,.0f}".format(gain) }}
+    </div>
+  </div>
+</div>
+
+<!-- Holdings table -->
+{% if holdings %}
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Holdings</span>
+    <span class="text-muted" style="font-size:0.8rem;">{{ holdings|length }} position{{ 's' if holdings|length != 1 }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Sector</th>
+          <th>Shares</th>
+          <th>Price</th>
+          <th>Value</th>
+          <th>Allocation</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in holdings %}
+        <tr>
+          <td class="fw-semibold">{{ h.company }}</td>
+          <td><span class="badge badge-sector">{{ h.sector }}</span></td>
+          <td class="text-muted" style="font-size:0.88rem;">{{ "%.4f"|format(h.shares) }}</td>
+          <td class="price-tag">${{ "%.2f"|format(h.price) }}</td>
+          <td class="fw-semibold">${{ "{:,.2f}".format(h.value) }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-1">
+              <div class="alloc-bar">
+                <div class="alloc-fill" style="width: {{ [h.allocation, 100]|min }}%;"></div>
+              </div>
+              <span class="text-muted" style="font-size:0.82rem;">{{ h.allocation }}%</span>
+            </div>
+          </td>
+          <td>
+            <a href="/sell?company={{ h.company|urlencode }}" class="btn btn-outline-danger btn-sm px-2" style="font-size:0.8rem;">Sell</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body text-center py-5">
+    <div style="font-size:2.5rem; margin-bottom:0.75rem;">📊</div>
+    <p class="text-muted mb-3">No holdings yet.</p>
+    <a href="/companies" class="btn btn-primary-gradient px-4">Browse Companies</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
