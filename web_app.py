@@ -5,7 +5,7 @@ from companies import (
     buy_shares, sell_shares, get_price
 )
 
-STARTING_CASH = 1_000_000
+STARTING_CASH = 100
 
 app = Flask(__name__)
 app.secret_key = "vc-fantasy-secret-key-2024"
