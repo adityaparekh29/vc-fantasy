@@ -1,6 +1,11 @@
 import json
 import os
 
+try:
+    import psycopg2
+except ImportError:
+    psycopg2 = None
+
 STARTING_PRICE = 10.0
 PRICE_CHANGE = 0.001     # price moves 0.1% per share bought/sold (only active at >=100 users)
 STATE_FILE = "game_state.json"
@@ -402,13 +407,49 @@ COMPANIES = [
 ]
 
 
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+
+def _get_conn():
+    url = DATABASE_URL
+    # Render gives postgres:// but psycopg2 needs postgresql://
+    if url and url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    return psycopg2.connect(url)
+
+
+def _ensure_table(conn):
+    with conn.cursor() as cur:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS game_state (
+                id      INTEGER PRIMARY KEY,
+                state   TEXT NOT NULL
+            )
+        """)
+    conn.commit()
+
+
 def load_state():
-    """Load game state from file, or create fresh state if file doesn't exist."""
+    """Load game state from Postgres (if DATABASE_URL set) or file."""
+    if DATABASE_URL and psycopg2:
+        conn = _get_conn()
+        _ensure_table(conn)
+        with conn.cursor() as cur:
+            cur.execute("SELECT state FROM game_state WHERE id = 1")
+            row = cur.fetchone()
+        conn.close()
+        if row:
+            return json.loads(row[0])
+        state = new_state()
+        save_state(state)
+        return state
+
+    # Local fallback: file
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as f:
             return json.load(f)
-    else:
-        return new_state()
+    return new_state()
+
 
 def new_state():
     """Create a fresh game state with all companies at starting price."""
@@ -423,8 +464,22 @@ def new_state():
         }
     return state
 
+
 def save_state(state):
-    """Save game state to file."""
+    """Save game state to Postgres (if DATABASE_URL set) or file."""
+    if DATABASE_URL and psycopg2:
+        conn = _get_conn()
+        _ensure_table(conn)
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO game_state (id, state) VALUES (1, %s)
+                ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state
+            """, (json.dumps(state),))
+        conn.commit()
+        conn.close()
+        return
+
+    # Local fallback: file
     with open(STATE_FILE, "w") as f:
         json.dump(state, f, indent=2)
 
