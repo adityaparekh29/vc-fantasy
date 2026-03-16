@@ -363,6 +363,17 @@ def sell():
     )
 
 
+@app.route("/api/prices")
+def api_prices():
+    from flask import jsonify
+    redir = require_login()
+    if redir:
+        return jsonify({}), 401
+    state = load_state()
+    prices = {name: data["price"] for name, data in state["companies"].items()}
+    return jsonify(prices)
+
+
 @app.route("/leaderboard")
 def leaderboard():
     redir = require_login()

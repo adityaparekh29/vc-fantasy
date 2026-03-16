@@ -4,31 +4,34 @@
 {% block content %}
 
 {% if prices_locked %}
-<div class="banner banner-locked">
+<div class="banner banner-locked fade-up">
   <span>🔒</span>
   <span><strong>Prices locked.</strong> Trades don't affect prices until 100+ investors join.</span>
   <span class="badge badge-locked" style="margin-left:auto;">Price Locked</span>
 </div>
 {% else %}
-<div class="banner banner-live">
+<div class="banner banner-live fade-up">
   <span>📈</span>
   <span><strong>Live pricing active.</strong> Your trades move market prices.</span>
   <span class="badge badge-live" style="margin-left:auto;">Markets Open</span>
 </div>
 {% endif %}
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-6 fade-up delay-1">
   <div>
     <h1 style="font-size:1.4rem; font-weight:700; letter-spacing:-0.4px;">Markets</h1>
-    <p class="text-muted text-sm mt-1">{{ total_companies }} companies · Cash: <strong style="color:var(--text-2);">${{ "%.2f"|format(cash) }}</strong></p>
+    <p class="text-muted text-sm mt-1">{{ total_companies }} companies · Cash: <strong style="color:var(--text-2);" id="cashDisplay">${{ "%.2f"|format(cash) }}</strong></p>
   </div>
+  <button class="btn-refresh" id="refreshBtn" onclick="refreshPrices()">
+    <span id="refreshIcon">↻</span> Refresh prices
+  </button>
 </div>
 
 <!-- Search -->
-<form method="get" action="/companies">
+<form method="get" action="/companies" class="fade-up delay-2">
   <input type="hidden" name="sector" value="{{ current_sector }}">
   <div class="search-row">
-    <input type="search" name="q" value="{{ search_q }}" placeholder="Search companies…">
+    <input type="search" name="q" value="{{ search_q }}" placeholder="Search companies…" id="searchInput">
     <button type="submit" class="btn btn-ghost btn-sm">Search</button>
     {% if search_q %}
     <a href="/companies?sector={{ current_sector|urlencode }}" class="btn btn-ghost btn-sm">Clear</a>
@@ -37,7 +40,7 @@
 </form>
 
 <!-- Sector filters -->
-<div class="filter-pills">
+<div class="filter-pills fade-up delay-2">
   <a href="/companies{% if search_q %}?q={{ search_q|urlencode }}{% endif %}"
      class="pill {{ 'active' if not current_sector }}">All</a>
   {% for s in sectors %}
@@ -47,27 +50,27 @@
 </div>
 
 <!-- Table -->
-<div class="card">
+<div class="card fade-up delay-3">
   <div class="overflow-x">
-    <table class="data-table">
+    <table class="data-table" id="companiesTable">
       <thead>
         <tr>
           <th>#</th>
-          <th>Company</th>
-          <th>Sector</th>
-          <th class="hide-mobile">Country</th>
-          <th>Price</th>
+          <th class="sortable" data-col="1">Company</th>
+          <th class="sortable" data-col="2">Sector</th>
+          <th class="sortable hide-mobile" data-col="3">Country</th>
+          <th class="sortable" data-col="4">Price</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         {% for c in companies %}
-        <tr>
+        <tr style="animation-delay: {{ loop.index0 * 0.02 }}s;">
           <td class="text-muted text-sm">{{ loop.index }}</td>
           <td class="fw-semibold">{{ c.name }}</td>
           <td><span class="badge badge-sector">{{ c.sector }}</span></td>
           <td class="text-muted text-sm hide-mobile">{{ c.country }}</td>
-          <td class="price">${{ "%.2f"|format(c.price) }}</td>
+          <td class="price" data-company="{{ c.name }}" data-val="{{ c.price }}">${{ "%.2f"|format(c.price) }}</td>
           <td>
             <button class="btn btn-primary btn-sm"
                     data-bs-toggle="modal"
@@ -81,9 +84,7 @@
         {% endfor %}
         {% if not companies %}
         <tr>
-          <td colspan="6" style="text-align:center; padding:40px; color:var(--muted);">
-            No companies match your search.
-          </td>
+          <td colspan="6" style="text-align:center; padding:40px; color:var(--muted);">No companies match your search.</td>
         </tr>
         {% endif %}
       </tbody>
@@ -99,23 +100,41 @@
         <h5 class="modal-title">Buy Shares</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" action="/buy">
+      <form method="post" action="/buy" id="buyForm">
         <div class="modal-body">
           <p class="fw-semibold mb-1" id="modal-company-name" style="font-size:1rem;"></p>
-          <p style="font-size:0.82rem; color:var(--muted); margin-bottom:20px;">
+          <p style="font-size:0.82rem; color:var(--muted); margin-bottom:18px;">
             Price: <span class="price">$<span id="modal-price"></span></span>
             {% if prices_locked %}<span class="badge badge-locked" style="margin-left:6px;">Locked</span>{% endif %}
           </p>
           <input type="hidden" name="company_name" id="modal-company-input">
+          <input type="hidden" id="modal-price-hidden">
+
           <div class="field" style="margin-bottom:0;">
             <label>Amount to invest ($)</label>
-            <input type="number" name="amount" min="0.01" step="0.01" placeholder="e.g. 5.00" required>
-            <p class="field-hint">Cash available: ${{ "%.2f"|format(cash) }}</p>
+            <div class="input-with-action">
+              <input type="number" name="amount" id="buyAmount"
+                     min="0.01" step="0.01" placeholder="e.g. 5.00" required>
+              <button type="button" class="input-max-btn" id="maxBtn">MAX</button>
+            </div>
+            <p class="field-hint">Cash: ${{ "%.2f"|format(cash) }}</p>
+          </div>
+
+          <!-- Live preview -->
+          <div class="calc-preview" id="buyPreview">
+            <div class="calc-row">
+              <span class="calc-label">Estimated shares</span>
+              <span class="calc-val" id="previewShares">—</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-label">Price per share</span>
+              <span class="calc-val" id="previewPrice">—</span>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-ghost btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-sm">Confirm Buy</button>
+          <button type="submit" class="btn btn-primary btn-sm" id="confirmBuy" disabled>Confirm Buy</button>
         </div>
       </form>
     </div>
@@ -123,11 +142,122 @@
 </div>
 
 <script>
+const CASH = {{ cash }};
+
+// ── Buy modal setup ────────────────────────────────────────────────────────
+let currentPrice = 0;
+
 document.getElementById('buyModal').addEventListener('show.bs.modal', function(e) {
   const btn = e.relatedTarget;
-  document.getElementById('modal-company-name').textContent = btn.dataset.company;
-  document.getElementById('modal-price').textContent = parseFloat(btn.dataset.price).toFixed(2);
-  document.getElementById('modal-company-input').value = btn.dataset.company;
+  const company = btn.dataset.company;
+  currentPrice = parseFloat(btn.dataset.price);
+
+  document.getElementById('modal-company-name').textContent = company;
+  document.getElementById('modal-price').textContent = currentPrice.toFixed(2);
+  document.getElementById('previewPrice').textContent = '$' + currentPrice.toFixed(2);
+  document.getElementById('modal-company-input').value = company;
+  document.getElementById('modal-price-hidden').value = currentPrice;
+  document.getElementById('buyAmount').value = '';
+  document.getElementById('buyPreview').classList.remove('visible');
+  document.getElementById('confirmBuy').disabled = true;
+});
+
+// ── Live share calculator ──────────────────────────────────────────────────
+document.getElementById('buyAmount').addEventListener('input', function() {
+  const amount = parseFloat(this.value);
+  const preview = document.getElementById('buyPreview');
+  const confirmBtn = document.getElementById('confirmBuy');
+
+  if (amount > 0 && currentPrice > 0) {
+    const shares = amount / currentPrice;
+    document.getElementById('previewShares').textContent = shares.toFixed(4) + ' shares';
+    preview.classList.add('visible');
+    confirmBtn.disabled = (amount > CASH || amount <= 0);
+  } else {
+    preview.classList.remove('visible');
+    confirmBtn.disabled = true;
+  }
+});
+
+// ── Max button ─────────────────────────────────────────────────────────────
+document.getElementById('maxBtn').addEventListener('click', function() {
+  const input = document.getElementById('buyAmount');
+  input.value = CASH.toFixed(2);
+  input.dispatchEvent(new Event('input'));
+});
+
+// ── Sortable table ─────────────────────────────────────────────────────────
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const table = th.closest('table');
+    const tbody = table.querySelector('tbody');
+    const col   = parseInt(th.dataset.col);
+    const asc   = !th.classList.contains('sort-asc');
+
+    table.querySelectorAll('th').forEach(t => t.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      const ac = a.cells[col], bc = b.cells[col];
+      if (!ac || !bc) return 0;
+      const av = ac.dataset.val ?? ac.textContent.replace(/[$,]/g,'').trim();
+      const bv = bc.dataset.val ?? bc.textContent.replace(/[$,]/g,'').trim();
+      const an = parseFloat(av), bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+      return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    rows.forEach((r, i) => { r.style.animationDelay = (i * 0.02) + 's'; tbody.appendChild(r); });
+  });
+});
+
+// ── Auto-refresh prices ────────────────────────────────────────────────────
+function refreshPrices() {
+  const icon = document.getElementById('refreshIcon');
+  icon.classList.add('spin');
+
+  fetch('/api/prices')
+    .then(r => r.json())
+    .then(prices => {
+      document.querySelectorAll('.price[data-company]').forEach(cell => {
+        const company = cell.dataset.company;
+        if (prices[company] !== undefined) {
+          const newPrice = prices[company];
+          const oldPrice = parseFloat(cell.dataset.val);
+          cell.dataset.val = newPrice;
+          cell.textContent = '$' + newPrice.toFixed(2);
+          if (newPrice > oldPrice) {
+            cell.classList.remove('price-down'); cell.classList.add('price-up');
+          } else if (newPrice < oldPrice) {
+            cell.classList.remove('price-up'); cell.classList.add('price-down');
+          }
+          setTimeout(() => cell.classList.remove('price-up','price-down'), 1400);
+
+          // update modal price if open
+          const modalCompany = document.getElementById('modal-company-input').value;
+          if (modalCompany === company) {
+            currentPrice = newPrice;
+            document.getElementById('modal-price').textContent = newPrice.toFixed(2);
+            document.getElementById('previewPrice').textContent = '$' + newPrice.toFixed(2);
+            document.getElementById('buyAmount').dispatchEvent(new Event('input'));
+          }
+        }
+      });
+    })
+    .catch(() => {})
+    .finally(() => { icon.classList.remove('spin'); });
+}
+
+// auto-refresh every 30s
+setInterval(refreshPrices, 30000);
+
+// ── Client-side search ─────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('#companiesTable tbody tr').forEach(row => {
+    const name = row.cells[1]?.textContent.toLowerCase() ?? '';
+    row.style.display = name.includes(q) ? '' : 'none';
+  });
 });
 </script>
 

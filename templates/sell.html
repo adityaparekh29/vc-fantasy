@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-6 fade-up">
   <div>
     <h1 style="font-size:1.4rem; font-weight:700; letter-spacing:-0.4px;">Sell Shares</h1>
     <p class="text-muted text-sm mt-1">Cash: <strong style="color:var(--text-2);">${{ "%.2f"|format(cash) }}</strong></p>
@@ -12,7 +12,7 @@
 </div>
 
 {% if holdings %}
-<div style="max-width:480px;">
+<div style="max-width:480px;" class="fade-up delay-1">
   <div class="card">
     <div class="card-head">Select a position to sell</div>
     <div style="padding:24px;">
@@ -47,13 +47,28 @@
 
         <div class="field">
           <label>Shares to sell</label>
-          <input type="number" name="shares_to_sell" id="sharesToSell"
-                 min="0.0001" step="0.0001" placeholder="e.g. 0.5" required>
+          <div class="input-with-action">
+            <input type="number" name="shares_to_sell" id="sharesToSell"
+                   min="0.0001" step="0.0001" placeholder="e.g. 0.5" required>
+            <button type="button" class="input-max-btn" id="sellAllBtn">ALL</button>
+          </div>
           <p class="field-hint" id="sellHint"></p>
         </div>
 
-        <div style="display:flex; gap:10px; margin-top:24px;">
-          <button type="submit" class="btn btn-primary" style="flex:1; justify-content:center;">Sell Shares</button>
+        <!-- Live proceeds preview -->
+        <div class="calc-preview" id="sellPreview">
+          <div class="calc-row">
+            <span class="calc-label">Estimated proceeds</span>
+            <span class="calc-val" id="previewProceeds">—</span>
+          </div>
+          <div class="calc-row">
+            <span class="calc-label">Shares remaining</span>
+            <span class="calc-val" id="previewRemaining">—</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+          <button type="submit" class="btn btn-primary" id="sellBtn" disabled style="flex:1; justify-content:center;">Sell Shares</button>
           <a href="/dashboard" class="btn btn-ghost">Cancel</a>
         </div>
       </form>
@@ -62,34 +77,68 @@
 </div>
 
 <script>
-const select = document.getElementById('companySelect');
-const info = document.getElementById('holdingInfo');
+const select      = document.getElementById('companySelect');
+const info        = document.getElementById('holdingInfo');
 const sharesOwned = document.getElementById('sharesOwned');
-const holdingValue = document.getElementById('holdingValue');
-const sharesToSell = document.getElementById('sharesToSell');
-const sellHint = document.getElementById('sellHint');
+const holdingVal  = document.getElementById('holdingValue');
+const sharesToSell= document.getElementById('sharesToSell');
+const sellHint    = document.getElementById('sellHint');
+const sellPreview = document.getElementById('sellPreview');
+const sellBtn     = document.getElementById('sellBtn');
+const sellAllBtn  = document.getElementById('sellAllBtn');
+
+let maxShares = 0, currentPrice = 0;
 
 function updateInfo() {
   const opt = select.options[select.selectedIndex];
   if (opt.value) {
-    const shares = parseFloat(opt.dataset.shares);
+    maxShares    = parseFloat(opt.dataset.shares);
+    currentPrice = parseFloat(opt.dataset.price);
     const value  = parseFloat(opt.dataset.value);
-    sharesOwned.textContent = shares.toFixed(4);
-    holdingValue.textContent = '$' + value.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-    sharesToSell.max = shares;
-    sellHint.textContent = 'Max: ' + shares.toFixed(4) + ' shares';
+
+    sharesOwned.textContent = maxShares.toFixed(4);
+    holdingVal.textContent  = '$' + value.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    sharesToSell.max = maxShares;
+    sellHint.textContent = 'Max: ' + maxShares.toFixed(4) + ' shares';
     info.style.display = 'block';
+    updatePreview();
   } else {
+    maxShares = 0;
     info.style.display = 'none';
+    sellPreview.classList.remove('visible');
     sellHint.textContent = '';
+    sellBtn.disabled = true;
   }
 }
+
+function updatePreview() {
+  const amount = parseFloat(sharesToSell.value);
+  if (amount > 0 && amount <= maxShares && currentPrice > 0) {
+    const proceeds   = amount * currentPrice;
+    const remaining  = maxShares - amount;
+    document.getElementById('previewProceeds').textContent   = '$' + proceeds.toFixed(2);
+    document.getElementById('previewRemaining').textContent  = remaining.toFixed(4) + ' shares';
+    sellPreview.classList.add('visible');
+    sellBtn.disabled = false;
+  } else {
+    sellPreview.classList.remove('visible');
+    sellBtn.disabled = true;
+  }
+}
+
 select.addEventListener('change', updateInfo);
+sharesToSell.addEventListener('input', updatePreview);
+
+sellAllBtn.addEventListener('click', () => {
+  sharesToSell.value = maxShares.toFixed(4);
+  sharesToSell.dispatchEvent(new Event('input'));
+});
+
 updateInfo();
 </script>
 
 {% else %}
-<div class="card">
+<div class="card fade-up delay-1">
   <div class="empty">
     <div class="empty-icon">📭</div>
     <div class="empty-title">Nothing to sell</div>

@@ -4,20 +4,20 @@
 {% block content %}
 
 {% if prices_locked %}
-<div class="banner banner-locked">
+<div class="banner banner-locked fade-up">
   <span>🔒</span>
   <span><strong>Prices locked.</strong> Market movements activate once 100+ investors join.</span>
   <span class="badge badge-locked" style="margin-left:auto;">Price Locked</span>
 </div>
 {% else %}
-<div class="banner banner-live">
+<div class="banner banner-live fade-up">
   <span>📈</span>
   <span><strong>Live pricing active.</strong> Your trades move market prices.</span>
   <span class="badge badge-live" style="margin-left:auto;">Markets Open</span>
 </div>
 {% endif %}
 
-<div class="flex items-center justify-between mb-6">
+<div class="flex items-center justify-between mb-6 fade-up delay-1">
   <div>
     <h1 style="font-size:1.4rem; font-weight:700; letter-spacing:-0.4px;">{{ vc_name }}'s Portfolio</h1>
     <p class="text-muted text-sm mt-1">VC Dashboard</p>
@@ -26,22 +26,23 @@
 </div>
 
 <!-- Stats -->
-<div class="stats-grid">
+<div class="stats-grid fade-up delay-2">
   <div class="stat-card">
     <div class="stat-label">Cash</div>
-    <div class="stat-value">${{ "%.2f"|format(cash) }}</div>
+    <div class="stat-value" data-count="{{ cash }}" data-prefix="$" data-decimals="2">${{ "%.2f"|format(cash) }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Holdings Value</div>
-    <div class="stat-value">${{ "%.2f"|format(holdings_value) }}</div>
+    <div class="stat-value" data-count="{{ holdings_value }}" data-prefix="$" data-decimals="2">${{ "%.2f"|format(holdings_value) }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Total Value</div>
-    <div class="stat-value">${{ "%.2f"|format(total_value) }}</div>
+    <div class="stat-value" data-count="{{ total_value }}" data-prefix="$" data-decimals="2">${{ "%.2f"|format(total_value) }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Gain / Loss</div>
-    <div class="stat-value {{ 'pos' if gain >= 0 else 'neg' }}">
+    <div class="stat-value {{ 'pos' if gain >= 0 else 'neg' }}"
+         data-count="{{ gain }}" data-prefix="{{ '+$' if gain >= 0 else '-$' }}" data-abs="1" data-decimals="2">
       {{ '+' if gain >= 0 else '' }}${{ "%.2f"|format(gain) }}
     </div>
   </div>
@@ -49,33 +50,33 @@
 
 <!-- Holdings -->
 {% if holdings %}
-<div class="card">
+<div class="card fade-up delay-3">
   <div class="card-head">
     <span>Holdings</span>
     <span class="label">{{ holdings|length }} position{{ 's' if holdings|length != 1 }}</span>
   </div>
   <div class="overflow-x">
-    <table class="data-table">
+    <table class="data-table" id="holdingsTable">
       <thead>
         <tr>
-          <th>Company</th>
+          <th class="sortable" data-col="0">Company</th>
           <th>Sector</th>
-          <th>Shares</th>
-          <th>Price</th>
-          <th>Value</th>
-          <th>Allocation</th>
+          <th class="sortable" data-col="2">Shares</th>
+          <th class="sortable" data-col="3">Price</th>
+          <th class="sortable" data-col="4">Value</th>
+          <th class="sortable" data-col="5">Allocation</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
         {% for h in holdings %}
-        <tr>
+        <tr style="animation-delay: {{ loop.index0 * 0.04 }}s;">
           <td class="fw-semibold">{{ h.company }}</td>
           <td><span class="badge badge-sector">{{ h.sector }}</span></td>
-          <td class="text-muted">{{ "%.4f"|format(h.shares) }}</td>
-          <td class="price">${{ "%.2f"|format(h.price) }}</td>
-          <td class="fw-semibold">${{ "%.2f"|format(h.value) }}</td>
-          <td>
+          <td class="text-muted" data-val="{{ h.shares }}">{{ "%.4f"|format(h.shares) }}</td>
+          <td class="price" data-val="{{ h.price }}">${{ "%.2f"|format(h.price) }}</td>
+          <td class="fw-semibold" data-val="{{ h.value }}">${{ "%.2f"|format(h.value) }}</td>
+          <td data-val="{{ h.allocation }}">
             <div class="alloc-wrap">
               <div class="alloc-bar"><div class="alloc-fill" style="width:{{ [h.allocation,100]|min }}%;"></div></div>
               <span class="alloc-pct">{{ h.allocation }}%</span>
@@ -91,7 +92,7 @@
   </div>
 </div>
 {% else %}
-<div class="card">
+<div class="card fade-up delay-3">
   <div class="empty">
     <div class="empty-icon">📊</div>
     <div class="empty-title">No holdings yet</div>
@@ -100,5 +101,57 @@
   </div>
 </div>
 {% endif %}
+
+<script>
+// ── Animated count-up ──────────────────────────────────────────────────────
+function animateCount(el) {
+  const target   = Math.abs(parseFloat(el.dataset.count));
+  const prefix   = el.dataset.prefix || '';
+  const decimals = parseInt(el.dataset.decimals || 0);
+  const duration = 700;
+  const start    = performance.now();
+
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const val = target * ease;
+    el.textContent = prefix + val.toLocaleString('en-US', {
+      minimumFractionDigits: decimals, maximumFractionDigits: decimals
+    });
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { animateCount(el); observer.disconnect(); } });
+  });
+  observer.observe(el);
+});
+
+// ── Sortable table ─────────────────────────────────────────────────────────
+document.querySelectorAll('th.sortable').forEach(th => {
+  th.addEventListener('click', () => {
+    const table = th.closest('table');
+    const tbody = table.querySelector('tbody');
+    const col   = parseInt(th.dataset.col);
+    const asc   = !th.classList.contains('sort-asc');
+
+    table.querySelectorAll('th').forEach(t => t.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(asc ? 'sort-asc' : 'sort-desc');
+
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      const av = a.cells[col].dataset.val ?? a.cells[col].textContent.replace(/[$,+]/g,'').trim();
+      const bv = b.cells[col].dataset.val ?? b.cells[col].textContent.replace(/[$,+]/g,'').trim();
+      const an = parseFloat(av), bn = parseFloat(bv);
+      if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
+      return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  });
+});
+</script>
 
 {% endblock %}
