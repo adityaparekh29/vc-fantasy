@@ -1,38 +1,54 @@
-{% extends "base.html" %}
-{% block title %}Login — VC Fantasy{% endblock %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In — VC Fantasy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-{% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-4 col-sm-10">
-    <div class="card auth-card mt-4">
-      <div class="card-body">
-        <div class="text-center mb-4">
-          <div style="font-size:2rem; margin-bottom:0.4rem;">💼</div>
-          <h2 class="auth-title mb-1">VC Fantasy</h2>
-          <p class="text-muted" style="font-size:0.88rem;">Sign in to your portfolio</p>
-        </div>
-        <form method="post">
-          <div class="mb-3">
-            <label class="form-label fw-semibold" for="username" style="font-size:0.85rem;">Username</label>
-            <input type="text" class="form-control" id="username" name="username"
-                   placeholder="Enter your username" required autofocus>
-          </div>
-          <div class="mb-4">
-            <label class="form-label fw-semibold" for="password" style="font-size:0.85rem;">Password</label>
-            <input type="password" class="form-control" id="password" name="password"
-                   placeholder="Enter your password" required>
-          </div>
-          <div class="d-grid">
-            <button type="submit" class="btn btn-primary-gradient btn-lg" style="font-size:0.95rem;">Sign In</button>
-          </div>
-        </form>
-        <hr class="my-3" style="border-color: #e2e8f0;">
-        <p class="text-center text-muted mb-0" style="font-size:0.85rem;">
-          Don't have an account?
-          <a href="/register" class="text-decoration-none fw-semibold">Create one</a>
-        </p>
-      </div>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="auth-dot"></span>
+      VC Fantasy
     </div>
+    <p class="auth-sub">Sign in to your portfolio</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flash-list" style="margin-bottom:20px;">
+          {% for category, message in messages %}
+            <li class="flash {{ category }}">
+              <span>{{ message }}</span>
+              <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <div class="field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="your_username" required autofocus>
+      </div>
+      <div class="field" style="margin-bottom:24px;">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+    </form>
+
+    <p class="auth-footer">
+      No account? <a href="/register">Create one</a>
+    </p>
   </div>
 </div>
-{% endblock %}
+
+</body>
+</html>

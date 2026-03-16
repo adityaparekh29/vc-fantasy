@@ -4,51 +4,58 @@
 {% block content %}
 
 {% if prices_locked %}
-<div class="prices-locked-banner">
+<div class="banner banner-locked">
   <span>🔒</span>
-  <span><strong>Prices are locked.</strong> Market price movements activate once 100+ investors have joined.</span>
+  <span><strong>Prices locked.</strong> Market movements activate once 100+ investors join.</span>
+  <span class="badge badge-locked" style="margin-left:auto;">Price Locked</span>
+</div>
+{% else %}
+<div class="banner banner-live">
+  <span>📈</span>
+  <span><strong>Live pricing active.</strong> Your trades move market prices.</span>
+  <span class="badge badge-live" style="margin-left:auto;">Markets Open</span>
 </div>
 {% endif %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="flex items-center justify-between mb-6">
   <div>
-    <h4 class="mb-0 fw-bold">{{ vc_name }}'s Portfolio</h4>
-    <span class="text-muted" style="font-size:0.85rem;">VC Dashboard</span>
+    <h1 style="font-size:1.4rem; font-weight:700; letter-spacing:-0.4px;">{{ vc_name }}'s Portfolio</h1>
+    <p class="text-muted text-sm mt-1">VC Dashboard</p>
   </div>
-  <a href="/companies" class="btn btn-sm btn-primary-gradient px-3">+ Invest</a>
+  <a href="/companies" class="btn btn-primary btn-sm">+ Invest</a>
 </div>
 
-<!-- Stats bar -->
-<div class="d-flex flex-wrap gap-3 mb-4">
+<!-- Stats -->
+<div class="stats-grid">
   <div class="stat-card">
     <div class="stat-label">Cash</div>
-    <div class="stat-value">${{ "{:,.0f}".format(cash) }}</div>
+    <div class="stat-value">${{ "%.2f"|format(cash) }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Holdings Value</div>
-    <div class="stat-value">${{ "{:,.0f}".format(holdings_value) }}</div>
+    <div class="stat-value">${{ "%.2f"|format(holdings_value) }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Total Value</div>
-    <div class="stat-value">${{ "{:,.0f}".format(total_value) }}</div>
+    <div class="stat-value">${{ "%.2f"|format(total_value) }}</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Gain / Loss</div>
-    <div class="stat-value {{ 'gain-positive' if gain >= 0 else 'gain-negative' }}">
-      {{ '+' if gain >= 0 else '' }}${{ "{:,.0f}".format(gain) }}
+    <div class="stat-value {{ 'pos' if gain >= 0 else 'neg' }}">
+      {{ '+' if gain >= 0 else '' }}${{ "%.2f"|format(gain) }}
     </div>
   </div>
 </div>
 
-<!-- Holdings table -->
+<!-- Holdings -->
 {% if holdings %}
 <div class="card">
-  <div class="card-header d-flex justify-content-between align-items-center">
+  <div class="card-head">
     <span>Holdings</span>
-    <span class="text-muted" style="font-size:0.8rem;">{{ holdings|length }} position{{ 's' if holdings|length != 1 }}</span>
+    <span class="label">{{ holdings|length }} position{{ 's' if holdings|length != 1 }}</span>
   </div>
-  <div class="table-responsive">
-    <table class="table table-hover mb-0">
+  <div class="overflow-x">
+    <table class="data-table">
       <thead>
         <tr>
           <th>Company</th>
@@ -65,19 +72,17 @@
         <tr>
           <td class="fw-semibold">{{ h.company }}</td>
           <td><span class="badge badge-sector">{{ h.sector }}</span></td>
-          <td class="text-muted" style="font-size:0.88rem;">{{ "%.4f"|format(h.shares) }}</td>
-          <td class="price-tag">${{ "%.2f"|format(h.price) }}</td>
-          <td class="fw-semibold">${{ "{:,.2f}".format(h.value) }}</td>
+          <td class="text-muted">{{ "%.4f"|format(h.shares) }}</td>
+          <td class="price">${{ "%.2f"|format(h.price) }}</td>
+          <td class="fw-semibold">${{ "%.2f"|format(h.value) }}</td>
           <td>
-            <div class="d-flex align-items-center gap-1">
-              <div class="alloc-bar">
-                <div class="alloc-fill" style="width: {{ [h.allocation, 100]|min }}%;"></div>
-              </div>
-              <span class="text-muted" style="font-size:0.82rem;">{{ h.allocation }}%</span>
+            <div class="alloc-wrap">
+              <div class="alloc-bar"><div class="alloc-fill" style="width:{{ [h.allocation,100]|min }}%;"></div></div>
+              <span class="alloc-pct">{{ h.allocation }}%</span>
             </div>
           </td>
           <td>
-            <a href="/sell?company={{ h.company|urlencode }}" class="btn btn-outline-danger btn-sm px-2" style="font-size:0.8rem;">Sell</a>
+            <a href="/sell?company={{ h.company|urlencode }}" class="btn btn-danger">Sell</a>
           </td>
         </tr>
         {% endfor %}
@@ -87,11 +92,13 @@
 </div>
 {% else %}
 <div class="card">
-  <div class="card-body text-center py-5">
-    <div style="font-size:2.5rem; margin-bottom:0.75rem;">📊</div>
-    <p class="text-muted mb-3">No holdings yet.</p>
-    <a href="/companies" class="btn btn-primary-gradient px-4">Browse Companies</a>
+  <div class="empty">
+    <div class="empty-icon">📊</div>
+    <div class="empty-title">No holdings yet</div>
+    <p class="empty-text">Browse startups and make your first investment.</p>
+    <a href="/companies" class="btn btn-primary">Browse Markets</a>
   </div>
 </div>
 {% endif %}
+
 {% endblock %}

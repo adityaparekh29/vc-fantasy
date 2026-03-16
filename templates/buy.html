@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Buy — VC Fantasy{% endblock %}
+
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 style="font-size:1.4rem; font-weight:700; letter-spacing:-0.4px;">Buy Shares</h1>
+    <p class="text-muted text-sm mt-1">Cash: <strong style="color:var(--text-2);">${{ "%.2f"|format(cash) }}</strong></p>
+  </div>
+  <a href="/companies" class="btn btn-ghost btn-sm">← Markets</a>
+</div>
+
+<div style="max-width:480px;">
+  <div class="card">
+    <div class="card-head">Place an investment</div>
+    <div style="padding:24px;">
+      <form method="post" action="/buy">
+        <div class="field">
+          <label>Company</label>
+          <select name="company_name" required>
+            <option value="">— Select a company —</option>
+            {% for c in companies %}
+            <option value="{{ c.name }}" {{ 'selected' if c.name == selected_company }}>
+              {{ c.name }} — ${{ "%.2f"|format(c.price) }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field" style="margin-bottom:24px;">
+          <label>Amount to invest ($)</label>
+          <input type="number" name="amount" min="0.01" step="0.01" placeholder="e.g. 5.00" required>
+          <p class="field-hint">Cash available: ${{ "%.2f"|format(cash) }}</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn btn-primary" style="flex:1; justify-content:center;">Buy</button>
+          <a href="/companies" class="btn btn-ghost">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
