@@ -29,6 +29,15 @@ def require_login():
     return None
 
 
+def check_user_exists(state, vc_name):
+    """If the session user doesn't exist in state, clear session and redirect."""
+    if vc_name not in state["vcs"]:
+        session.pop("vc_name", None)
+        flash("Session expired or account not found. Please log in again.", "warning")
+        return redirect(url_for("login"))
+    return None
+
+
 def prices_active(state):
     return len(state["vcs"]) >= 100
 
@@ -135,6 +144,9 @@ def dashboard():
 
     vc_name = session["vc_name"]
     state = load_state()
+    redir = check_user_exists(state, vc_name)
+    if redir:
+        return redir
     vc = state["vcs"][vc_name]
 
     holdings = []
@@ -181,6 +193,9 @@ def companies():
 
     vc_name = session["vc_name"]
     state = load_state()
+    redir = check_user_exists(state, vc_name)
+    if redir:
+        return redir
     vc = state["vcs"][vc_name]
 
     current_sector = request.args.get("sector", "").strip()
@@ -223,6 +238,9 @@ def buy():
 
     vc_name = session["vc_name"]
     state = load_state()
+    redir = check_user_exists(state, vc_name)
+    if redir:
+        return redir
     vc = state["vcs"][vc_name]
 
     if request.method == "POST":
@@ -286,6 +304,9 @@ def sell():
 
     vc_name = session["vc_name"]
     state = load_state()
+    redir = check_user_exists(state, vc_name)
+    if redir:
+        return redir
     vc = state["vcs"][vc_name]
 
     if request.method == "POST":
