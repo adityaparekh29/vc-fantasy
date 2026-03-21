@@ -4,7 +4,7 @@ A multiplayer stock-market-style game where players invest a virtual $1,000,000 
 
 ## How it works
 
-- Register an account and receive **$1,000,000** in virtual cash
+- Register an account and receive **$100** in virtual cash
 - Browse **360 companies** across 17 sectors (Gen AI, Fintech, Cybersecurity, Robotics, Space, and more)
 - Buy and sell shares to maximise your portfolio value
 - Compete on the leaderboard against other investors
